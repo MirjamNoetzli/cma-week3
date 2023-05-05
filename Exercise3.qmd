@@ -1,0 +1,61 @@
+---
+title: "Exercise 3"
+format: html
+---
+
+## Task 1
+
+```{r}
+# load libraries
+library(tidyverse)
+library(readr)
+
+# Import data
+wildschwein <- read_delim("data/wildschwein_BE_2056.csv", delim = ",")
+
+wildschwein$TierName |> unique()
+
+
+sabi <- wildschwein |> filter(TierName == "Sabi") |> 
+  filter(DatetimeUTC >= as.POSIXct("2015-07-01", tz="UTC"), 
+         DatetimeUTC < as.POSIXct("2015-07-03", tz="UTC"))
+
+ggplot(sabi, aes(E,N , color = DatetimeUTC))+
+  geom_point()+
+  geom_path()+
+  coord_equal()
+
+sabi |> 
+  head(50) |> 
+  ggplot(aes(DatetimeUTC, 1))+
+  geom_point()
+
+sabi <- sabi |> 
+  mutate(
+    n_plus1 = sqrt((lead(E,1)-E)^2 + (lead(N,1)-N)^2),
+    n_plus2 = sqrt((lead(E,2)-E)^2 + (lead(N,2)-N)^2),
+    n_minus1 = sqrt((lag(E, 1)-E)^2 + (lag(N, 1)-N)^2),
+    n_minus2 = sqrt((lag(E, 2)-E)^2 + (lag(N, 2)-N)^2)
+  )
+
+sabi <- sabi |> 
+  rowwise()|> 
+  mutate(
+    stepMEAN = mean(c(n_minus1, n_minus2, n_plus1, n_plus2), na.rm = TRUE)
+  ) |> 
+  ungroup()
+
+ggplot(sabi, aes(stepMEAN))+
+  geom_histogram(binwidth = 10)+
+  geom_vline(xintercept = quantile(sabi$stepMEAN, probs = 0.25, na.rm = TRUE))
+
+sabi |> 
+  mutate(static = stepMEAN < mean(stepMEAN,na.rm = TRUE)) |> 
+  ggplot(aes(E,N))+
+           geom_path()+
+           geom_point(aes(color = static))+
+           coord_fixed()
+  
+  
+```
+
