@@ -161,7 +161,6 @@ ggplot(posmo_filter, aes(stepMEAN))+
   
 ```
 
-
 ## Task 3: Visualize segmented trajectories
 ```{r}
 # Vizualize according to the static values  
@@ -175,5 +174,138 @@ ggplot(posmo_filter_moving, aes(X,Y))+
            geom_path()+
            geom_point()+
            coord_fixed()
+```
+
+## Task 4: Segment-based analysis
+```{r}
+# Assigns unique IDs based on the column "static"
+rle_id <- function(vec) {
+    x <- rle(vec)$lengths
+    as.factor(rep(seq_along(x), times = x))
+}
+
+posmo_filter <- posmo_filter |>
+    mutate(segment_id = rle_id(static))
+
+head(posmo_filter)
+
+# Vizualize with Plot
+plot_all_segments <- ggplot(posmo_filter, aes(X,Y))+
+  geom_path(aes(color=segment_id))+
+  geom_point(aes(color = segment_id))+
+  scale_color_hue()+
+  coord_fixed()+
+  theme(legend.position="none")
+  
+plot_all_segments <- plot_all_segments + labs(title = "All segments (uncleaned)")
+
+# Filter segments that are > 5 minutes long
+posmo_filter_long <- posmo_filter |> 
+  arrange(segment_id, datetime) |> 
+  mutate(time_diff = difftime(datetime, lag(datetime), units = "mins"),
+         time_diff = ifelse(is.na(time_diff), 0, time_diff)) |> 
+  group_by(segment_id) |> 
+  mutate(cumulative_time = cumsum(time_diff)) |> 
+  filter(cumulative_time > 5) |> 
+  ungroup()
+
+# Vizualize with Plot
+plot_long_segments <- ggplot(posmo_filter_long, aes(X,Y))+
+  geom_path(aes(color=segment_id))+
+  geom_point(aes(color = segment_id))+
+  scale_color_hue()+
+  coord_fixed()+
+  theme(legend.position="none")
+
+plot_long_segments <- plot_long_segments + labs(title = "Long segments (removed segments <5 minutes)")
+
+# Vizualize both Plots side by side
+gridExtra::grid.arrange(plot_all_segments, plot_long_segments, ncol=2)+
+  labs(title = "Moving segments coloured by segment ID")
+  
+```
+
+## Task 5: Similarity measures
+```{r}
+# Import Data
+pedestrian <- read_delim("data/pedestrian.csv", delim = ",")
+
+pedestrian$TrajID |> unique()
+
+pedestrian1 <- pedestrian |> filter(TrajID == 1) |> 
+  ggplot(aes(E,N))+
+  geom_point(color = "red")+
+  geom_path(color = "red")+
+  coord_equal()+
+  labs(title = "TrajID: 1")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+pedestrian2 <- pedestrian |> filter(TrajID == 2) |> 
+  ggplot(aes(E,N))+
+  geom_point(color = "yellow")+
+  geom_path(color = "yellow")+
+  coord_equal()+
+  labs(title = "TrajID: 2")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+pedestrian3 <- pedestrian |> filter(TrajID == 3) |> 
+  ggplot(aes(E,N))+
+  geom_point(color = "green")+
+  geom_path(color = "green")+
+  coord_equal()+
+  labs(title = "TrajID: 3")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+pedestrian4 <- pedestrian |> filter(TrajID == 4) |> 
+  ggplot(aes(E,N))+
+  geom_point(color = "navy")+
+  geom_path(color = "navy")+
+  coord_equal()+
+  labs(title = "TrajID: 4")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+pedestrian5 <- pedestrian |> filter(TrajID == 5) |> 
+  ggplot(aes(E,N))+
+  geom_point(color = "orange")+
+  geom_path(color = "orange")+
+  coord_equal()+
+  labs(title = "TrajID: 5")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+pedestrian6 <- pedestrian |> filter(TrajID == 6) |> 
+  ggplot(aes(E,N))+
+  geom_point(color = "black")+
+  geom_path(color = "black")+
+  coord_equal()+
+  labs(title = "TrajID: 6")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+library("cowplot")
+plot_grid <- plot_grid(pedestrian1, pedestrian2, pedestrian3, pedestrian4, pedestrian5, pedestrian6, ncol=2)
+  
+
+
+
+```
+
+```{r}
+
+plot_grid +
+  labs(title = "Moving segments coloured by segment ID", subtitle="Each subplot highlights a trajectory")
+
+ggplot()+
+  ggtitle(paste("Visual comparison of the 6 trajectories"))+
+  labs(title="Visual comparison of the 6 trajectories", subtitle="Each subplot highlights a trajectory")
+  geom_line(data=caro, aes(DatetimeUTC,speed_ms, color="caro"))+
+  geom_line(data=caro3, aes(DatetimeUTC,speed_ms, color= "caro3"))+
+  geom_line(data=caro6, aes(DatetimeUTC,speed_ms, color="caro6"))+
+  geom_line(data=caro9, aes(DatetimeUTC,speed_ms, color="caro9"))+
+  scale_color_manual(values = c("red","darkgreen", "navy", "magenta"))+
+  theme_classic()
 ```
 
