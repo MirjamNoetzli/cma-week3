@@ -287,25 +287,6 @@ pedestrian6 <- pedestrian |> filter(TrajID == 6) |>
 
 library("cowplot")
 plot_grid <- plot_grid(pedestrian1, pedestrian2, pedestrian3, pedestrian4, pedestrian5, pedestrian6, ncol=2)
-  
 
-
-
+plot_grid
 ```
-
-```{r}
-
-plot_grid +
-  labs(title = "Moving segments coloured by segment ID", subtitle="Each subplot highlights a trajectory")
-
-ggplot()+
-  ggtitle(paste("Visual comparison of the 6 trajectories"))+
-  labs(title="Visual comparison of the 6 trajectories", subtitle="Each subplot highlights a trajectory")
-  geom_line(data=caro, aes(DatetimeUTC,speed_ms, color="caro"))+
-  geom_line(data=caro3, aes(DatetimeUTC,speed_ms, color= "caro3"))+
-  geom_line(data=caro6, aes(DatetimeUTC,speed_ms, color="caro6"))+
-  geom_line(data=caro9, aes(DatetimeUTC,speed_ms, color="caro9"))+
-  scale_color_manual(values = c("red","darkgreen", "navy", "magenta"))+
-  theme_classic()
-```
-
