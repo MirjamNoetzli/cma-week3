@@ -7,8 +7,9 @@ format: html
 
 ```{r}
 # load libraries
-library(tidyverse)
-library(readr)
+library("tidyverse")
+library("readr")
+library("sf")
 
 # Import data
 wildschwein <- read_delim("data/wildschwein_BE_2056.csv", delim = ",")
@@ -55,7 +56,16 @@ sabi |>
            geom_path()+
            geom_point(aes(color = static))+
            coord_fixed()
-  
-  
+```
+
+## Preparation Posmo Data
+```{r}
+# Import Posmo data
+
+posmo <- read_delim("data/posmo_data.csv")
+
+# Keep only the necessary columns
+posmo <- select(posmo, datetime, lon_x, lat_y)
+
 ```
 
