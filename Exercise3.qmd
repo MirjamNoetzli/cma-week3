@@ -232,16 +232,18 @@ pedestrian <- read_delim("data/pedestrian.csv", delim = ",")
 
 pedestrian$TrajID |> unique()
 
-pedestrian1 <- pedestrian |> filter(TrajID == 1) |> 
-  ggplot(aes(E,N))+
+pedestrian1 <- pedestrian |> filter(TrajID == 1) 
+
+pedestrian1_plot <- ggplot(pedestrian1, aes(E,N))+
   geom_point(color = "red")+
   geom_path(color = "red")+
   coord_equal()+
   labs(title = "TrajID: 1")+
   theme(plot.title = element_text(hjust = 0.5))
 
-pedestrian2 <- pedestrian |> filter(TrajID == 2) |> 
-  ggplot(aes(E,N))+
+pedestrian2 <- pedestrian |> filter(TrajID == 2) 
+
+pedestrian2_plot <- ggplot(pedestrian2, aes(E,N))+
   geom_point(color = "yellow")+
   geom_path(color = "yellow")+
   coord_equal()+
@@ -249,8 +251,9 @@ pedestrian2 <- pedestrian |> filter(TrajID == 2) |>
   theme(plot.title = element_text(hjust = 0.5))
 
 
-pedestrian3 <- pedestrian |> filter(TrajID == 3) |> 
-  ggplot(aes(E,N))+
+pedestrian3 <- pedestrian |> filter(TrajID == 3)
+  
+pedestrian3_plot <- ggplot(pedestrian3, aes(E,N))+
   geom_point(color = "green")+
   geom_path(color = "green")+
   coord_equal()+
@@ -258,8 +261,9 @@ pedestrian3 <- pedestrian |> filter(TrajID == 3) |>
   theme(plot.title = element_text(hjust = 0.5))
 
 
-pedestrian4 <- pedestrian |> filter(TrajID == 4) |> 
-  ggplot(aes(E,N))+
+pedestrian4 <- pedestrian |> filter(TrajID == 4)
+
+pedestrian4_plot <- ggplot(pedestrian4, aes(E,N))+
   geom_point(color = "navy")+
   geom_path(color = "navy")+
   coord_equal()+
@@ -267,8 +271,9 @@ pedestrian4 <- pedestrian |> filter(TrajID == 4) |>
   theme(plot.title = element_text(hjust = 0.5))
 
 
-pedestrian5 <- pedestrian |> filter(TrajID == 5) |> 
-  ggplot(aes(E,N))+
+pedestrian5 <- pedestrian |> filter(TrajID == 5)
+  
+pedestrian5_plot <- ggplot(pedestrian5, aes(E,N))+
   geom_point(color = "orange")+
   geom_path(color = "orange")+
   coord_equal()+
@@ -276,8 +281,9 @@ pedestrian5 <- pedestrian |> filter(TrajID == 5) |>
   theme(plot.title = element_text(hjust = 0.5))
 
 
-pedestrian6 <- pedestrian |> filter(TrajID == 6) |> 
-  ggplot(aes(E,N))+
+pedestrian6 <- pedestrian |> filter(TrajID == 6)
+
+pedestrian6_plot <- ggplot(pedestrian6, aes(E,N))+
   geom_point(color = "black")+
   geom_path(color = "black")+
   coord_equal()+
@@ -286,7 +292,113 @@ pedestrian6 <- pedestrian |> filter(TrajID == 6) |>
 
 
 library("cowplot")
-plot_grid <- plot_grid(pedestrian1, pedestrian2, pedestrian3, pedestrian4, pedestrian5, pedestrian6, ncol=2)
+plot_grid <- plot_grid(pedestrian1_plot, pedestrian2_plot, pedestrian3_plot, pedestrian4_plot, pedestrian5_plot, pedestrian6_plot, ncol=2)
 
 plot_grid
 ```
+
+## Task 6: Calculate similarity
+```{r}
+# Install and required load package
+install.packages("SimilarityMeasures")
+library("SimilarityMeasures")
+
+# Get familiar with package
+help(package = "SimilarityMeasures")
+
+# Get the E & N Values for each trajectory
+E1 <- pedestrian$E[pedestrian$TrajID == 1]
+N1 <- pedestrian$N[pedestrian$TrajID == 1]
+E2 <- pedestrian$E[pedestrian$TrajID == 2]
+N2 <- pedestrian$N[pedestrian$TrajID == 2]
+E3 <- pedestrian$E[pedestrian$TrajID == 3]
+N3 <- pedestrian$N[pedestrian$TrajID == 3]
+E4 <- pedestrian$E[pedestrian$TrajID == 4]
+N4 <- pedestrian$N[pedestrian$TrajID == 4]
+E5 <- pedestrian$E[pedestrian$TrajID == 5]
+N5 <- pedestrian$N[pedestrian$TrajID == 5]
+E6 <- pedestrian$E[pedestrian$TrajID == 6]
+N6 <- pedestrian$N[pedestrian$TrajID == 6]
+
+# Add the E & N values to the newly defined trajectories
+traj1 <- cbind(E1, N1)
+traj2 <- cbind(E2, N2)
+traj3 <- cbind(E3, N3)
+traj4 <- cbind(E4, N4)
+traj5 <- cbind(E5, N5)
+traj6 <- cbind(E6, N6)
+
+# Calculating the dynamic time warping algorithm (DTW) for the trajectories
+DTW1_2 <- DTW(traj1, traj2, pointSpacing=-1) # 3650.025
+DTW1_3 <- DTW(traj1, traj3, pointSpacing=-1) # 50785.51
+DTW1_4 <- DTW(traj1, traj4, pointSpacing=-1) # 5906.787
+DTW1_5 <- DTW(traj1, traj5, pointSpacing=-1) # 2178.411
+DTW1_6 <- DTW(traj1, traj6, pointSpacing=-1) # 1152.718
+# The smallest warp path  of 1152.718 is between trajectory 1 & trajectory 6
+
+# Create a data frame with all DTW values
+DTW_all <- data.frame(Trajectory = c(2:6),
+                      Measure = "DTW",
+                      Value = c(DTW1_2, DTW1_3, DTW1_4, DTW1_5, DTW1_6))
+
+# Calculating Edit Distance between the trajectories
+EditDist1_2 <- EditDist(traj1, traj2, pointDistance=20) # 45
+EditDist1_3 <- EditDist(traj1, traj3, pointDistance=20) # 47
+EditDist1_4 <- EditDist(traj1, traj4, pointDistance=20) # 42
+EditDist1_5 <- EditDist(traj1, traj5, pointDistance=20) # 28
+EditDist1_6 <- EditDist(traj1, traj6, pointDistance=20) # 27
+# Trajectory 1 & Trajectory 6 are most similar with minimum 27 edits required to allow the two trajectories to be considered equivilant
+
+# Create a data frame with all Edit Distances
+EditDist_all <- data.frame(Trajectory = c(2:6),
+                      Measure = "EditDist",
+                      Value = c(EditDist1_2, EditDist1_3, EditDist1_4, EditDist1_5, EditDist1_6))
+
+# Calculating Frechet distance between the trajectories
+Frechet1_2 <- Frechet(traj1, traj2, testLeash=-1) # 28.54075 
+Frechet1_3 <- Frechet(traj1, traj3, testLeash=-1) # 2307.844
+Frechet1_4 <- Frechet(traj1, traj4, testLeash=-1) # 1069.229 
+Frechet1_5 <- Frechet(traj1, traj5, testLeash=-1) # 717.9816 
+Frechet1_6 <- Frechet(traj1, traj6, testLeash=-1) # 38.96272 
+# The minimum lenght is between trajectory 1 & trajectory 2 (28.54075)
+
+# Create a data frame with all Frechet distances
+Frechet_all <- data.frame(Trajectory = c(2:6),
+                      Measure = "Frechet",
+                      Value = c(Frechet1_2, Frechet1_3, Frechet1_4, Frechet1_5, Frechet1_6))
+
+
+# Calculate LCSS Algorithm on the longest common subsequences between two trajectories
+LCSS1_2 <- LCSS(traj1, traj2, pointSpacing=-1, pointDistance=20, 
+     errorMarg=10, returnTrans=FALSE) # 17
+LCSS1_3 <- LCSS(traj1, traj3, pointSpacing=-1, pointDistance=20, 
+     errorMarg=10, returnTrans=FALSE) # 1
+LCSS1_4 <- LCSS(traj1, traj4, pointSpacing=-1, pointDistance=20, 
+     errorMarg=10, returnTrans=FALSE) # 18
+LCSS1_5 <- LCSS(traj1, traj5, pointSpacing=-1, pointDistance=20, 
+     errorMarg=10, returnTrans=FALSE) # 31
+LCSS1_6 <- LCSS(traj1, traj6, pointSpacing=-1, pointDistance=20, 
+     errorMarg=10, returnTrans=FALSE) # 26
+# The longes common subsequence of 31 is between trajectory 1 & trajectory 5
+
+# Create a data frame with all LCSS algorithms
+LCSS_all <- data.frame(Trajectory = c(2:6),
+                      Measure = "LCSS",
+                      Value = c(LCSS1_2, LCSS1_3, LCSS1_4, LCSS1_5, LCSS1_6))
+
+# Create a data frame with values of all types of similarity measures combined
+measures_all <- rbind(DTW_all, EditDist_all, Frechet_all, LCSS_all)
+
+# Vizualize all similarity measures with a plot
+ggplot(measures_all, aes(Trajectory, Value, fill = as.factor(Trajectory)))+
+  geom_bar(stat = "identity")+
+  facet_wrap(.~Measure, scales = "free_y")+
+  xlab("Comparison trajectory")+
+  ylab("Value")+
+  ggtitle("Computed similarities using different measures between trajectory 1 to all other trajectories")+
+  theme(plot.title = element_text(hjust = 0.5))+
+  theme(legend.position = "none")
+
+# My intuition about the measure results is reflected in the plots
+```
+
